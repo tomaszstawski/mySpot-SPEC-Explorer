@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>mySpot SPEC Macro & Command Database</title>
+    <meta name="description" content="Interactive search, explorer, and documentation database for mySpot SPEC commands and macros.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="app.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo-area">
+                    <span class="logo-icon">⚡</span>
+                    <div class="logo-text">
+                        <h1>mySpot SPEC Explorer</h1>
+                        <p>Command, function, and macro database for instrument control</p>
+                    </div>
+                </div>
+                <div class="header-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-total-macros">-</div>
+                        <div class="stat-label">Total Macros</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-unique-macros">-</div>
+                        <div class="stat-label">Unique Names</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-total-files">-</div>
+                        <div class="stat-label">Macro Files</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-documented">-</div>
+                        <div class="stat-label">Documented</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Layout -->
+        <div class="main-layout">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="profile-section">
+                    <span class="section-title" style="margin: 1.2rem 1.5rem 0.3rem;">Spec Owner</span>
+                    <div class="profile-tabs">
+                        <button class="profile-tab active" data-owner="all">All</button>
+                        <button class="profile-tab" data-owner="Ivo">Ivo</button>
+                        <button class="profile-tab" data-owner="Chenghao">Chenghao</button>
+                    </div>
+                </div>
+                <div class="search-section">
+                    <label for="search-input" class="section-title">Search Database</label>
+                    <div class="search-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="search-input" placeholder="Type to search macros..." autocomplete="off">
+                        <button id="search-clear-btn" class="clear-btn" title="Clear search">×</button>
+                    </div>
+                    <div class="search-filters">
+                        <label class="filter-checkbox">
+                            <input type="checkbox" id="filter-name" checked>
+                            <span>Name</span>
+                        </label>
+                        <label class="filter-checkbox">
+                            <input type="checkbox" id="filter-docs" checked>
+                            <span>Documentation</span>
+                        </label>
+                        <label class="filter-checkbox">
+                            <input type="checkbox" id="filter-code">
+                            <span>Source Code</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="file-filter-section">
+                    <div class="sidebar-header">
+                        <span class="section-title">Files & Directories</span>
+                        <button id="reset-file-filter" class="text-btn">Clear Filter</button>
+                    </div>
+                    <div class="file-list-container" id="file-list">
+                        <!-- Populated by JS -->
+                        <div class="loading-placeholder">Loading files...</div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Content Area -->
+            <main class="content-area">
+                <!-- Toolbar -->
+                <div class="toolbar">
+                    <div class="results-count" id="results-count">
+                        Found <span id="count-number">0</span> macros
+                    </div>
+                    <div class="toolbar-actions">
+                        <div class="sort-wrapper">
+                            <label for="sort-select">Sort by:</label>
+                            <select id="sort-select">
+                                <option value="name-asc">Name (A-Z)</option>
+                                <option value="name-desc">Name (Z-A)</option>
+                                <option value="file-asc">File Path (A-Z)</option>
+                                <option value="lines-desc">Length (Longest)</option>
+                                <option value="lines-asc">Length (Shortest)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Filters Bar -->
+                <div class="active-filters-bar" id="active-filters-bar" style="display: none;">
+                    <span class="filter-label">Active file:</span>
+                    <span class="active-file-tag" id="active-file-tag">None</span>
+                    <button class="remove-filter-btn" id="remove-file-filter-tag">×</button>
+                </div>
+
+                <!-- Macro List -->
+                <div class="macro-list" id="macro-list">
+                    <!-- Populated by JS -->
+                    <div class="loading-placeholder">Loading macros database...</div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination" id="pagination-controls">
+                    <button class="pag-btn" id="pag-prev" disabled>&larr; Previous</button>
+                    <span class="pag-info">Page <span id="pag-current">1</span> of <span id="pag-total">1</span></span>
+                    <button class="pag-btn" id="pag-next" disabled>Next &rarr;</button>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Detail View Modal -->
+    <div class="modal" id="macro-modal">
+        <div class="modal-backdrop" id="modal-backdrop"></div>
+        <div class="modal-content">
+            <button class="modal-close" id="modal-close-btn" title="Close details">&times;</button>
+            <div class="modal-header-info">
+                <div class="modal-meta-row">
+                    <span class="modal-file-path" id="modal-file-path">spec/ivo/standard.mac</span>
+                    <span class="owner-badge" id="modal-owner-badge">Ivo</span>
+                </div>
+                <h2 class="modal-title" id="modal-title">macro_name</h2>
+                <div class="modal-args" id="modal-args">args</div>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <h3>Description / Documentation</h3>
+                    <div class="modal-desc" id="modal-desc">Documentation comments for this macro.</div>
+                </div>
+                <div class="modal-section code-section">
+                    <div class="code-header">
+                        <h3>Source Code</h3>
+                        <button class="copy-btn" id="modal-copy-code-btn">Copy Code</button>
+                    </div>
+                    <pre><code class="spec-code-highlight" id="modal-code">Code block</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data and App Scripts -->
+    <script src="macros_data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
